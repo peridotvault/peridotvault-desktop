@@ -1,11 +1,9 @@
-import { Principal } from '@dfinity/principal';
-
 export type Timestamp = bigint;
 export type AppId = bigint;
 export type AnnouncementId = bigint;
-export type UserId = Principal;
-export type DeveloperId = Principal;
-export type TokenLedgerId = Principal;
+export type UserId = string;
+export type DeveloperId = string;
+export type TokenLedgerId = string;
 export type Version = string;
 export type Country = string;
 export type Language = string;

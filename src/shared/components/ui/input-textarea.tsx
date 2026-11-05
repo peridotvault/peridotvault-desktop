@@ -57,9 +57,9 @@ export const InputTextarea = React.forwardRef<HTMLTextAreaElement, InputTextarea
       resize();
     }, [resize, rest.value]); // also when controlled value changes
 
-    const handleInput: React.FormEventHandler<HTMLTextAreaElement> = (e) => {
+    const handleInput = (e: React.FormEvent<HTMLTextAreaElement>) => {
       if (autoGrow) resize();
-      rest.onInput?.(e);
+      rest.onInput?.(e as any);
     };
 
     const baseArea =

@@ -4,7 +4,7 @@ import type {
   MediaItem,
   NativeDistribution,
   WebDistribution,
-} from '@shared/blockchain/icp/types/game';
+} from '@shared/interfaces/game';
 export type { MediaItem };
 import { OSKey, Timestamp, UserId } from '../CoreInterface';
 

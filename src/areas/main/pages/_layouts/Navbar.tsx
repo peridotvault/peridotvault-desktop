@@ -6,10 +6,6 @@ import { SearchInput } from '@shared/components/organisms/search-input';
 export const MainNavbar = () => {
   const chains = [
     {
-      name: 'Internet Computer',
-      imgUrl: './images/chains/icp.webp',
-    },
-    {
       name: 'Solana',
       imgUrl: './images/chains/sol.webp',
     },

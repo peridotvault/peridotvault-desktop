@@ -1,32 +1,29 @@
 // wallet.ts
 import { generateMnemonic, mnemonicToSeedSync } from 'bip39';
-import { Secp256k1KeyIdentity } from '@dfinity/identity-secp256k1';
 import { BIP32Factory } from 'bip32';
-import { Principal } from '@dfinity/principal';
-import { AccountIdentifier } from '@dfinity/ledger-icp';
 import { Buffer } from 'buffer';
 import * as ecc from 'tiny-secp256k1';
 import { EncryptedData, decryptString, encryptString } from '@shared/security/aes';
 import { KV_KEYS } from '@shared/database/kv-keys';
-import { getKvItem, setKvItem, deleteKvItem } from './local-db/kv-key';
+import { getKvItem, setKvItem, deleteKvItem } from '../../core/storage/kv-key';
+import type { PeridotRuntimeWalletData } from './peridot-runtime.types';
 
 const bip32 = BIP32Factory(ecc);
 
 export interface WalletData {
     encryptedSeedPhrase: EncryptedData | null;
-    principalId: string | null;
-    accountId: string | null;
     encryptedPrivateKey: EncryptedData | null;
     verificationData: EncryptedData | null;
     lock: OpenLockConfig | null;
+    runtimeWallet: PeridotRuntimeWalletData | null;
 }
+
+export const hasRuntimeWalletData = (wallet: WalletData): boolean => Boolean(wallet.runtimeWallet);
 
 export interface WalletGenerateSuccess {
     success: true;
     encryptedSeedPhrase: EncryptedData;
-    principalId: string;
     encryptedPrivateKey: EncryptedData;
-    accountId: string;
     verificationData: EncryptedData;
 }
 
@@ -53,7 +50,6 @@ if (!ENCRYPTION_KEY) {
 
 async function encryptPassword(password: string): Promise<AESEncrypted> {
     try {
-        // Convert encryption key to proper format
         const keyMaterial = await crypto.subtle.importKey(
             'raw',
             new TextEncoder().encode(ENCRYPTION_KEY),
@@ -62,10 +58,8 @@ async function encryptPassword(password: string): Promise<AESEncrypted> {
             ['deriveBits', 'deriveKey'],
         );
 
-        // Generate random IV
         const iv = crypto.getRandomValues(new Uint8Array(12));
 
-        // Derive an AES-GCM key using PBKDF2
         const key = await crypto.subtle.deriveKey(
             {
                 name: 'PBKDF2',
@@ -79,7 +73,6 @@ async function encryptPassword(password: string): Promise<AESEncrypted> {
             ['encrypt'],
         );
 
-        // Encrypt the password
         const encodedPassword = new TextEncoder().encode(password);
         const encryptedData = await crypto.subtle.encrypt(
             {
@@ -90,7 +83,6 @@ async function encryptPassword(password: string): Promise<AESEncrypted> {
             encodedPassword,
         );
 
-        // Convert to base64 for storage
         return {
             iv: Buffer.from(iv).toString('base64'),
             encryptedData: Buffer.from(encryptedData).toString('base64'),
@@ -103,7 +95,6 @@ async function encryptPassword(password: string): Promise<AESEncrypted> {
 
 async function decryptPassword(encrypted: AESEncrypted): Promise<string> {
     try {
-        // Convert encryption key to proper format
         const keyMaterial = await crypto.subtle.importKey(
             'raw',
             new TextEncoder().encode(ENCRYPTION_KEY),
@@ -112,7 +103,6 @@ async function decryptPassword(encrypted: AESEncrypted): Promise<string> {
             ['deriveBits', 'deriveKey'],
         );
 
-        // Derive the same key using PBKDF2
         const key = await crypto.subtle.deriveKey(
             {
                 name: 'PBKDF2',
@@ -126,11 +116,9 @@ async function decryptPassword(encrypted: AESEncrypted): Promise<string> {
             ['decrypt'],
         );
 
-        // Convert data from base64
         const iv = Buffer.from(encrypted.iv, 'base64');
         const encryptedData = Buffer.from(encrypted.encryptedData, 'base64');
 
-        // Decrypt the data
         const decryptedData = await crypto.subtle.decrypt(
             {
                 name: 'AES-GCM',
@@ -150,36 +138,26 @@ async function decryptPassword(encrypted: AESEncrypted): Promise<string> {
 export type WalletGenerateResult = WalletGenerateSuccess | WalletGenerateError;
 
 class WalletService {
-    // private lock: OpenLockConfig | null = null;
-
     async generateWallet(seedPhrase: string, password: string): Promise<WalletGenerateResult> {
         try {
             const seed = mnemonicToSeedSync(seedPhrase);
             const root = bip32.fromSeed(seed);
-            const child = root.derivePath("m/44'/223'/0'/0/0");
+            const child = root.derivePath("m/44'/60'/0'/0/0"); // EVM path
 
             if (!child.privateKey) {
                 throw new Error('Private key is undefined');
             }
 
-            const privateKeyBytes = new Uint8Array(child.privateKey!);
-            const identity = Secp256k1KeyIdentity.fromSecretKey(privateKeyBytes);
-            const principalId = identity.getPrincipal().toString();
-            const accountId = this.generateAccountId(principalId);
-            const privateKey = Buffer.from(identity.getKeyPair().secretKey).toString('hex');
+            const privateKey = Buffer.from(child.privateKey).toString('hex');
 
-            // Create verification data for lock checks
             const verificationData = await encryptString('VERIFY', password);
-
             const encryptedSeedPhrase = await encryptString(seedPhrase, password);
             const encryptedPrivateKey = await encryptString(privateKey, password);
 
             return {
                 success: true,
                 encryptedSeedPhrase,
-                principalId,
                 encryptedPrivateKey,
-                accountId,
                 verificationData,
             };
         } catch (error) {
@@ -197,7 +175,6 @@ class WalletService {
         minutes: number = 30,
     ): Promise<OpenLockConfig> {
         try {
-            // Verify password by attempting to decrypt verification data
             try {
                 const decrypted = await decryptString(verificationData, password);
                 if (decrypted !== 'VERIFY') {
@@ -207,10 +184,8 @@ class WalletService {
                 throw new Error('Invalid password');
             }
 
-            // Encrypt the password using AES
             const encryptedPassword = await encryptPassword(password);
 
-            // Create new lock with expiration
             const lock: OpenLockConfig = {
                 expiresAt: Date.now() + minutes * 60 * 1000,
                 encryptedPassword: encryptedPassword,
@@ -228,7 +203,6 @@ class WalletService {
         try {
             const lock = await getKvItem<OpenLockConfig>(KV_KEYS.walletLock);
             if ((await this.isLockOpen()) && lock?.encryptedPassword) {
-                // Decrypt the stored password and use it
                 const decryptedPassword = await decryptPassword(lock.encryptedPassword);
                 return await decryptString(encryptedData, decryptedPassword);
             } else if (!password) {
@@ -261,12 +235,6 @@ class WalletService {
     async getLock(): Promise<OpenLockConfig | null> {
         const lock = await getKvItem<OpenLockConfig>(KV_KEYS.walletLock);
         return lock;
-    }
-
-    generateAccountId(principalId: string): string {
-        const principal = Principal.fromText(principalId);
-        const accountIdentifier = AccountIdentifier.fromPrincipal({ principal });
-        return accountIdentifier.toHex();
     }
 
     generateNewSeedPhrase(): string {

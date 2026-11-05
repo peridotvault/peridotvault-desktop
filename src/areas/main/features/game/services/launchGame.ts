@@ -1,5 +1,5 @@
 import { isDesktopRuntime } from '@shared/desktop/windowControls';
-import type { Distribution, PGCGame } from '@shared/blockchain/icp/types/game';
+import type { Distribution, PGCGame } from '@shared/interfaces/game';
 import type { InstalledEntry, InstalledRecord } from '@shared/utils/installedStorage';
 import { getInstalledRecord } from '@shared/utils/installedStorage';
 import { detectOSKey, normalizeOSKey } from '@shared/utils/os';

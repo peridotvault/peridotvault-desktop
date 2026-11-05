@@ -4,8 +4,8 @@ export default function Vault() {
   return (
     <div className="w-full h-full ">
       <iframe
-        src="https://app.peridotvault.com/"
-        // src="https://app.peridotvault.com/"
+        src="http://localhost:3000?embed=1"
+        // src="https://web.peridotvault.com?embed=1"
         className="w-full h-full border-none"
         title="PeridotVault Store"
       />

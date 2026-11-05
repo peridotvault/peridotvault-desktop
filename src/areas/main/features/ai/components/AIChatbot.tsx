@@ -2,7 +2,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { chat } from '@shared/api/ai.api';
 import { EyeGlassesIcon } from '@shared/assets/icons/MainIcons';
-import { getKvItem, setKvItem } from '@shared/services/local-db/kv-key';
+import { getKvItem, setKvItem } from '@core/storage/kv-key';
 import { chatKey } from '@shared/database/kv-keys';
 
 /* ---------- sanitize utils (sama seperti web) ---------- */

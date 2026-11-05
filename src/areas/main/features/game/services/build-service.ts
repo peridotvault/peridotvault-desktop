@@ -4,7 +4,7 @@ import type {
   Platform,
   ViewMode,
   WebDistribution,
-} from '@shared/blockchain/icp/types/game';
+} from '@shared/interfaces/game';
 import { DraftService } from '@features/game/local-db/services/draft-services';
 
 type WebBuildForm = {

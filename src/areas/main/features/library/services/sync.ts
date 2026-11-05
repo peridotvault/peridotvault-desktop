@@ -1,123 +1,132 @@
-import type { GameId } from "@shared/interfaces/game";
-import type {
-    CreateLibraryEntryInput,
-} from "@shared/interfaces/library";
-import type { PGCGame } from "@shared/blockchain/icp/types/game";
-import { getMyGames } from "@features/game/services/dto";
-import { libraryService } from "./localDb";
-import {
-    createEmptyImageDataUrl,
-    downloadAndCompressToDataUrl,
-} from "../utils/imageCompression";
-import { resolveWebBuildUrlFromGame } from "../utils/formatDistribution";
+import { deriveEvmAddressFromSeed } from '@shared/utils/evm';
+import { getMyGamesEvm } from '@shared/blockchain/evm/services/game';
+import { libraryService } from './localDb';
+import { walletService } from '@shared/services/wallet';
+import { resolveWebBuildUrlFromGame } from '../utils/formatDistribution';
+
+import type { PGCGame, GameId } from '@shared/interfaces/game';
+import type { CreateLibraryEntryInput } from '@shared/interfaces/library';
 
 // pilih URL cover terbaik
 function resolveCoverUrl(game: PGCGame): string | undefined {
-    return (
-        game.coverVerticalImage ||
-        game.coverHorizontalImage ||
-        game.bannerImage ||
-        undefined
-    );
+  return game.coverVerticalImage || game.coverHorizontalImage || game.bannerImage || undefined;
 }
 
 // pilih URL banner terbaik
 function resolveBannerUrl(game: PGCGame): string | undefined {
-    return (
-        game.bannerImage ||
-        game.coverHorizontalImage ||
-        game.coverVerticalImage ||
-        undefined
-    );
+  return game.bannerImage || game.coverHorizontalImage || game.coverVerticalImage || undefined;
 }
 
-// mapping utama
+// mapping utama - uses original image URLs (compression removed)
 async function mapPGCGameToLibraryInput(game: PGCGame): Promise<CreateLibraryEntryInput> {
-    const gameId = game.gameId as GameId;
+  const gameId = game.gameId as GameId;
 
-    const coverUrl = resolveCoverUrl(game);
-    const bannerUrl = resolveBannerUrl(game);
+  const coverUrl = resolveCoverUrl(game);
+  const bannerUrl = resolveBannerUrl(game);
 
-    let coverVerticalImage: string;
-    let bannerImage: string;
+  // Use original URLs without compression for now
+  // Image compression can be added back later if needed
+  const coverVerticalImage = coverUrl || '';
+  const bannerImage = bannerUrl || '';
 
-    try {
-        if (!coverUrl) throw new Error("No cover URL");
-        // cover vertical untuk card
-        coverVerticalImage = await downloadAndCompressToDataUrl(coverUrl, {
-            maxWidth: 600,
-            maxHeight: 900,
-            quality: 0.8,
-            mimeType: "image/jpeg",
-        });
-    } catch (err) {
-        console.warn("[librarySyncService] coverVerticalImage failed, using empty", err);
-        coverVerticalImage = createEmptyImageDataUrl();
-    }
+  const webUrl = resolveWebBuildUrlFromGame(game);
+  console.log('[sync] resolved webUrl', { gameId: game.gameId, webUrl });
 
-    try {
-        if (!bannerUrl) throw new Error("No banner URL");
-        // banner horizontal (kalau mau dipakai di hero)
-        bannerImage = await downloadAndCompressToDataUrl(bannerUrl, {
-            maxWidth: 1280,
-            maxHeight: 720,
-            quality: 0.8,
-            mimeType: "image/jpeg",
-        });
-    } catch (err) {
-        console.warn("[librarySyncService] bannerImage failed, fallback to cover", err);
-        bannerImage = coverVerticalImage;
-    }
+  return {
+    gameId,
+    gameName: game.name,
+    description: game.description ?? '',
+    coverVerticalImage,
+    bannerImage,
 
-    const webUrl = resolveWebBuildUrlFromGame(game);
-    console.log("[sync] resolved webUrl", { gameId: game.gameId, webUrl });
+    launchType: 'web',
+    webUrl,
 
-    return {
-        gameId,
-        gameName: game.name,
-        description: game.description ?? "",
-        coverVerticalImage,
-        bannerImage,
+    // belum ada install lokal untuk web game
+    install: undefined,
 
-        launchType: "web",
-        webUrl,
-
-        // belum ada install lokal untuk web game ICP
-        install: undefined,
-
-        status: "installed", // atau "not-installed" kalau kamu mau beda arti
-        stats: {
-            totalPlayTimeSeconds: 0,
-            launchCount: 0,
-        },
-    };
+    status: 'installed',
+    stats: {
+      totalPlayTimeSeconds: 0,
+      launchCount: 0,
+    },
+  };
 }
 
 /**
- * Sync dari getMyGames → Dexie library.
+ * Sync dari getMyGames (EVM) → Dexie library.
  */
-export async function syncLibraryFromRemote(wallet: any) {
-    if (!wallet) return;
+export async function syncLibraryFromRemote(wallet: unknown) {
+  if (!wallet) return;
 
-    const remoteGames = await getMyGames({ wallet });
-    console.log(remoteGames);
+  try {
+    let seedPhrase: string | null = null;
+
+    // Check if this is a native/runtime wallet that needs migration
+    const walletAny = wallet as { runtimeWallet?: unknown; encryptedSeedPhrase?: string };
+    const isNativeWallet = walletAny.runtimeWallet && !walletAny.encryptedSeedPhrase;
+    if (isNativeWallet) {
+      console.log('[sync] Native wallet detected - skipping sync (requires migrated wallet)');
+      return;
+    }
+
+    // Only try to decrypt desktop wallet (encryptedSeedPhrase)
+    if (walletAny.encryptedSeedPhrase) {
+      try {
+        // Pastikan lock sudah terbuka
+        const isLockOpen = await walletService.isLockOpen();
+        if (isLockOpen) {
+          seedPhrase = await walletService.decryptWalletData(
+            walletAny.encryptedSeedPhrase as unknown as { iv: string; salt: string; data: string },
+          );
+          console.log('[sync] Decrypted native seed phrase for sync');
+        } else {
+          console.warn('[sync] Wallet is locked, cannot sync library from native seed phrase');
+        }
+      } catch (decryptErr) {
+        console.error('[sync] Failed to decrypt native wallet for sync', decryptErr);
+      }
+    }
+
+    if (!seedPhrase) {
+      console.warn('[sync] No seed phrase available for library sync');
+      return;
+    }
+
+    // Validate seed phrase
+    const wordCount = seedPhrase.trim().split(/\s+/).length;
+    if (![12, 15, 18, 21, 24].includes(wordCount)) {
+      console.error(`[sync] Invalid seed phrase word count: ${wordCount}. Cannot sync.`);
+      return;
+    }
+
+    const evmAddress = deriveEvmAddressFromSeed(seedPhrase);
+    console.log('[sync] Syncing library for EVM address:', evmAddress);
+
+    const remoteGames = await getMyGamesEvm({ address: evmAddress });
+    console.log('[sync] Found remote games:', remoteGames.length);
 
     for (const game of remoteGames) {
-        const gameId = game.gameId as GameId;
-        const existing = await libraryService.getById(gameId);
-        const mapped = await mapPGCGameToLibraryInput(game);
+      const gameId = game.gameId as GameId;
+      const existing = await libraryService.getById(gameId);
+      const mapped = await mapPGCGameToLibraryInput(game);
 
-        if (!existing) {
-            await libraryService.create(mapped);
-        } else {
-            await libraryService.update(gameId, {
-                gameName: mapped.gameName,
-                description: mapped.description,
-                coverVerticalImage: mapped.coverVerticalImage,
-                bannerImage: mapped.bannerImage,
-                launchType: mapped.launchType,
-                webUrl: mapped.webUrl,
-            });
-        }
+      if (!existing) {
+        await libraryService.create(mapped);
+        console.log('[sync] Created library entry for:', gameId);
+      } else {
+        await libraryService.update(gameId, {
+          gameName: mapped.gameName,
+          description: mapped.description,
+          coverVerticalImage: mapped.coverVerticalImage,
+          bannerImage: mapped.bannerImage,
+          launchType: mapped.launchType,
+          webUrl: mapped.webUrl,
+        });
+        console.log('[sync] Updated library entry for:', gameId);
+      }
     }
+  } catch (err) {
+    console.error('[sync] Library sync error:', err);
+  }
 }

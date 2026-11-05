@@ -17,11 +17,10 @@ const WalletContext = createContext<WalletContextData | undefined>(undefined);
 export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [wallet, setWallet] = useState<WalletData>({
     encryptedSeedPhrase: null,
-    principalId: null,
-    accountId: null,
     encryptedPrivateKey: null,
     lock: null,
     verificationData: null,
+    runtimeWallet: null,
   });
 
   const [isGeneratedSeedPhrase, setIsGeneratedSeedPhrase] = useState(false);
@@ -52,7 +51,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     const saveWallet = async () => {
       try {
         // Only save if we have either encrypted seed phrase or password
-        if (wallet.encryptedSeedPhrase) {
+        if (wallet.encryptedSeedPhrase || wallet.runtimeWallet) {
           await saveWalletData(wallet);
         }
       } catch (error) {

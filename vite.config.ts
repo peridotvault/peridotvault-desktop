@@ -15,16 +15,40 @@ export default defineConfig(async () => ({
     wasm(),
   ],
   resolve: {
-    alias: {
-      "@features": fileURLToPath(new URL("./src/areas/main/features", import.meta.url)),
-      "@pages": fileURLToPath(new URL("./src/areas/main/pages", import.meta.url)),
-      "@components": fileURLToPath(new URL("./src/components", import.meta.url)),
-      "@shared": fileURLToPath(new URL("./src/shared", import.meta.url)),
-      "@interfaces": fileURLToPath(new URL("./src/interfaces", import.meta.url)),
-      "@services": fileURLToPath(new URL("./src/services", import.meta.url)),
-      "@login": fileURLToPath(new URL("./src/areas/login", import.meta.url)),
-      "@main": fileURLToPath(new URL("./src/areas/main", import.meta.url)),
-    },
+    alias: [
+      {
+        find: "@features/wallet",
+        replacement: fileURLToPath(new URL("./src/features/wallet", import.meta.url)),
+      },
+      {
+        find: "@features",
+        replacement: fileURLToPath(new URL("./src/areas/main/features", import.meta.url)),
+      },
+      {
+        find: "@core",
+        replacement: fileURLToPath(new URL("./src/core", import.meta.url)),
+      },
+      {
+        find: "@pages",
+        replacement: fileURLToPath(new URL("./src/areas/main/pages", import.meta.url)),
+      },
+      {
+        find: "@shared",
+        replacement: fileURLToPath(new URL("./src/shared", import.meta.url)),
+      },
+      {
+        find: "@login",
+        replacement: fileURLToPath(new URL("./src/areas/login", import.meta.url)),
+      },
+      {
+        find: "@main",
+        replacement: fileURLToPath(new URL("./src/areas/main", import.meta.url)),
+      },
+      {
+        find: "@",
+        replacement: fileURLToPath(new URL("./src", import.meta.url)),
+      },
+    ],
   },
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`

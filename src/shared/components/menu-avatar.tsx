@@ -11,8 +11,8 @@ import {
 import { Link } from 'react-router-dom';
 import { ButtonWithSound } from './ui/ButtonWithSound';
 import { clearWalletData } from '@shared/services/store';
-import { useWallet, useWalletUpdate } from '@shared/contexts/WalletContext';
-import { shortenAddress } from '@shared/utils/short-address';
+import { logout } from '@shared/services/auth-init.service';
+import { useWalletUpdate } from '@shared/contexts/WalletContext';
 import { redirectToLogin } from '@shared/desktop/windowControls';
 import { Avatar } from '@shared/components/ui/avatar';
 
@@ -25,7 +25,6 @@ type Props = {
 };
 
 export const MenuAvatar = ({ open, onClose, leftClassName = 'left-24' }: Props) => {
-  const { wallet } = useWallet();
   const updateWallet = useWalletUpdate();
 
   const list = [
@@ -87,17 +86,17 @@ export const MenuAvatar = ({ open, onClose, leftClassName = 'left-24' }: Props) 
 
   const handleLogout = async () => {
     try {
-      // 1. clear persistent storage (Dexie/localStorage, dll)
+      // 1. clear auth session, library data, and wallet data
+      await logout();
       await clearWalletData();
 
       // 2. reset in-memory wallet
       updateWallet({
         encryptedSeedPhrase: null,
-        principalId: null,
-        accountId: null,
         encryptedPrivateKey: null,
         lock: null,
         verificationData: null,
+        runtimeWallet: null,
       });
 
       // 3. UX: tutup menu
@@ -141,7 +140,7 @@ export const MenuAvatar = ({ open, onClose, leftClassName = 'left-24' }: Props) 
               <Avatar />
               <div className="flex flex-col gap-1">
                 <span className="font-bold leading-4 line-clamp-1">
-                  {shortenAddress({ address: wallet.principalId, slice: 6 })}
+                  EVM Wallet
                 </span>
                 <span className="text-sm leading-3 line-clamp-1">m@example.com</span>
               </div>

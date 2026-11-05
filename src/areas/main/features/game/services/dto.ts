@@ -1,1 +1,1 @@
-export * from '@shared/blockchain/icp/services/game';
+export * from '@shared/blockchain/evm/services/game';

@@ -1,7 +1,6 @@
 import React, { useRef } from 'react';
 import { useWallet, useWalletUpdate } from '@shared/contexts/WalletContext';
 import _ from 'lodash';
-import { LoadingPage } from '@pages/additional/loading-page';
 import { useWalletLockStore } from '@shared/states/wallet-lock.store';
 import { InputFloating } from '@shared/components/ui/input-floating';
 import { faLock, faUnlock } from '@fortawesome/free-solid-svg-icons';
@@ -9,7 +8,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ButtonWithSound } from '@shared/components/ui/ButtonWithSound';
 import { AnimatePresence, motion } from 'framer-motion';
 import { clearWalletData } from '@shared/services/store';
+import { logout } from '@shared/services/auth-init.service';
 import { redirectToLogin } from '@shared/desktop/windowControls';
+import { LoadingPage } from '@main/pages/additional/loading-page';
+import { migratePeridotRuntimeWalletToDesktop } from '@shared/services/peridot-runtime';
+import { hasRuntimeWalletData } from '@shared/services/wallet';
 
 export const RequiredPassword = () => {
   const { wallet, isCheckingWallet } = useWallet();
@@ -19,20 +22,17 @@ export const RequiredPassword = () => {
 
   const [password, setPassword] = React.useState('');
   const [isForgotPassword, setForgotPassword] = React.useState(false);
+  const [runtimeError, setRuntimeError] = React.useState<string | null>(null);
+
+  const hasDesktopWallet = !!wallet.verificationData; // Check for desktop wallet
+  const hasRuntimeWallet = hasRuntimeWalletData(wallet);
 
   // inisialisasi lock di awal
   React.useEffect(() => {
     if (isCheckingWallet) return;
 
     // cek kalau wallet belum lengkap → lempar ke login (sekali saja)
-    if (
-      (!wallet.principalId ||
-        !wallet.accountId ||
-        !wallet.encryptedPrivateKey ||
-        !wallet.encryptedSeedPhrase ||
-        !wallet.verificationData) &&
-      !redirectRequestedRef.current
-    ) {
+    if (!hasDesktopWallet && !hasRuntimeWallet && !redirectRequestedRef.current) {
       redirectRequestedRef.current = true;
       redirectToLogin();
       return;
@@ -40,31 +40,52 @@ export const RequiredPassword = () => {
 
     // init lock state dari KV
     useWalletLockStore.getState().initFromStorage();
-  }, [wallet, isCheckingWallet]);
+  }, [hasDesktopWallet, hasRuntimeWallet, isCheckingWallet]);
 
   const handleConfirm = async () => {
-    if (!wallet.verificationData) return;
     try {
-      await unlockWithPassword(password, wallet.verificationData, 30);
+      setRuntimeError(null);
+
+      if (wallet.verificationData) {
+        await unlockWithPassword(password, wallet.verificationData, 30);
+        setPassword('');
+        return;
+      }
+
+      if (!wallet.runtimeWallet) {
+        return;
+      }
+
+      const migratedWallet = await migratePeridotRuntimeWalletToDesktop(wallet.runtimeWallet, password);
+
+      updateWallet({
+        encryptedSeedPhrase: migratedWallet.encryptedSeedPhrase,
+        encryptedPrivateKey: migratedWallet.encryptedPrivateKey,
+        verificationData: migratedWallet.verificationData,
+      });
+
+      await unlockWithPassword(password, migratedWallet.verificationData, 30);
       setPassword('');
     } catch {
-      // error sudah di-set di store
+      if (!wallet.verificationData) {
+        setRuntimeError('Invalid password');
+      }
     }
   };
 
   const handleLogout = async () => {
     try {
-      // 1. clear persistent storage (Dexie/localStorage, dll)
+      // 1. clear auth session, library data, and wallet data
+      await logout();
       await clearWalletData();
 
       // 2. reset in-memory wallet
       updateWallet({
         encryptedSeedPhrase: null,
-        principalId: null,
-        accountId: null,
         encryptedPrivateKey: null,
         lock: null,
         verificationData: null,
+        runtimeWallet: null,
       });
 
       // 4. Pindah ke login window (di desktop: invoke open_login_window)
@@ -112,7 +133,9 @@ export const RequiredPassword = () => {
                   }
                 }}
               />
-              {error && <p className="text-chart-5 text-sm">{error}</p>}
+              {(error || runtimeError) && (
+                <p className="text-chart-5 text-sm">{runtimeError ?? error}</p>
+              )}
             </div>
 
             <ButtonWithSound

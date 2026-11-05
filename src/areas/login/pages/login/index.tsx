@@ -1,53 +1,87 @@
-// src/areas/login/pages/login.tsx (misal pathnya begini)
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
+import walletHtml from '@antigane/peridotwallet-runtime/login?url';
 import { useWallet } from '@shared/contexts/WalletContext';
-import { ImportWallet } from '../import';
-import { CreateWallet } from '../create';
 import { redirectToMain } from '@shared/desktop/windowControls';
+import { getPeridotRuntimeWallet } from '@shared/services/peridot-runtime';
+import { saveWalletData } from '@shared/services/store';
+import { hasRuntimeWalletData } from '@shared/services/wallet';
 
 export interface LoginScreenProps {
   onAuthenticated?: () => void;
 }
 
 export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
-  const { wallet } = useWallet();
-  const [isImportWallet, setIsImportWallet] = useState<boolean>(true);
+  const { wallet, setWallet } = useWallet();
+  const redirectRequestedRef = useRef(false);
 
-  const hasWallet = useMemo(
-    () =>
-      Boolean(
-        wallet.principalId &&
-          wallet.accountId &&
-          wallet.encryptedPrivateKey &&
-          wallet.verificationData,
-      ),
-    [wallet],
-  );
+  const hasRuntimeWallet = useMemo(() => hasRuntimeWalletData(wallet), [wallet]);
+  const hasAnyWallet = hasRuntimeWallet;
 
   useEffect(() => {
-    if (hasWallet) {
+    if (!hasAnyWallet) {
+      return;
+    }
+
+    if (redirectRequestedRef.current) {
+      return;
+    }
+
+    redirectRequestedRef.current = true;
+    onAuthenticated?.();
+    redirectToMain();
+  }, [hasAnyWallet, onAuthenticated]);
+
+  useEffect(() => {
+    if (hasAnyWallet) {
+      return;
+    }
+
+    let isMounted = true;
+
+    const syncRuntimeWallet = async () => {
+      const runtimeWallet = await getPeridotRuntimeWallet();
+
+      if (!isMounted || !runtimeWallet || redirectRequestedRef.current) {
+        return;
+      }
+
+      redirectRequestedRef.current = true;
+
+      // Construct the new wallet data first
+      const nextWallet = {
+        ...wallet,
+        runtimeWallet,
+      };
+
+      // Save to storage BEFORE updating React state to ensure persistence
+      await saveWalletData(nextWallet);
+
+      // Then update React state
+      setWallet(nextWallet);
+
       onAuthenticated?.();
       redirectToMain();
-    }
-  }, [hasWallet, onAuthenticated]);
+    };
+
+    void syncRuntimeWallet();
+
+    const intervalId = window.setInterval(() => {
+      void syncRuntimeWallet();
+    }, 1000);
+
+    return () => {
+      isMounted = false;
+      window.clearInterval(intervalId);
+    };
+  }, [hasAnyWallet, setWallet, wallet]);
 
   return (
-    <main data-tauri-drag-region className="flex justify-center w-full h-dvh items-center gap-6">
-      <div data-tauri-drag-region className="flex w-full h-full max-w-[1200px]">
-        <section data-tauri-drag-region className="w-1/2 h-full flex items-center justify-center">
-          <h1 data-tauri-drag-region className="text-8xl font-bold">
-            Welcome
-          </h1>
-        </section>
-
-        <section data-tauri-drag-region className="w-1/2 h-full flex items-center justify-center">
-          {isImportWallet ? (
-            <ImportWallet setIsImportWallet={setIsImportWallet} />
-          ) : (
-            <CreateWallet setIsImportWallet={setIsImportWallet} />
-          )}
-        </section>
-      </div>
+    <main data-tauri-drag-region className="h-dvh w-full overflow-hidden bg-black">
+      <iframe
+        title="Peridot Wallet Login"
+        src={walletHtml}
+        className="h-full w-full border-0"
+      />
     </main>
   );
 }

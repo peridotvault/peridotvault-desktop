@@ -5,12 +5,8 @@ import { createHashRouter } from 'react-router-dom';
 import UpdaterPage from '@pages/additional/UpdaterPage';
 import AppShell from './layouts/AppShell';
 import VaultPage from '@pages/vault';
-import { StudioGameMedia } from '@pages/studio/game/media';
-import { StudioGameBuilds } from '@pages/studio/game/build';
-import { StudioGameMarket } from '@pages/studio/game/market';
-import { StudioGameNewBuild } from '@pages/studio/game/build/create';
-import StudioGamePublish from '@pages/studio/game/publish';
 import MainLayout from '@pages/_layouts/Main';
+import { StudioGameStub } from '@pages/studio/game/StudioGameStub';
 import { LoadingScreen } from '@shared/components/organisms/LoadingScreen';
 
 // LAZY (split)
@@ -25,9 +21,6 @@ const EditUser = lazy(() => import('@pages/user/edit'));
 const StudioMainLayout = lazy(() => import('@pages/studio/_components/_layouts/Main'));
 const StudioDashboard = lazy(() => import('@pages/studio'));
 const StudioGames = lazy(() => import('@pages/studio/game'));
-const StudioGameLayout = lazy(() => import('@pages/studio/game/_components/layouts/main'));
-const StudioGameDetails = lazy(() => import('@pages/studio/game/general'));
-const StudioGameAnnouncement = lazy(() => import('@pages/studio/game/announcement'));
 const StudioTeamPage = lazy(() => import('@pages/studio/team'));
 const NotFound = lazy(() => import('@pages/not-found'));
 
@@ -112,39 +105,38 @@ const router = createHashRouter([
           },
           {
             path: 'game/:gameId',
-            element: withSuspense(<StudioGameLayout />),
             children: [
               {
                 index: true,
-                element: withSuspense(<StudioGameDetails />),
+                element: <StudioGameStub />,
               },
               {
                 path: 'details',
-                element: withSuspense(<StudioGameDetails />),
+                element: <StudioGameStub />,
               },
               {
                 path: 'media',
-                element: withSuspense(<StudioGameMedia />),
+                element: <StudioGameStub />,
               },
               {
                 path: 'builds',
-                element: withSuspense(<StudioGameBuilds />),
+                element: <StudioGameStub />,
               },
               {
                 path: 'builds/new',
-                element: <StudioGameNewBuild />,
+                element: <StudioGameStub />,
               },
               {
                 path: 'market',
-                element: withSuspense(<StudioGameMarket />),
+                element: <StudioGameStub />,
               },
               {
                 path: 'publish',
-                element: withSuspense(<StudioGamePublish />),
+                element: <StudioGameStub />,
               },
               {
                 path: 'announcements',
-                element: withSuspense(<StudioGameAnnouncement />),
+                element: <StudioGameStub />,
               },
             ],
           },

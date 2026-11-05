@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbTack } from '@fortawesome/free-solid-svg-icons';
-import type { GameAnnouncementType } from '@shared/blockchain/icp/types/game';
+import type { GameAnnouncementType } from '@shared/interfaces/game';
 import { ImageLoading } from '@shared/constants/images';
 
 interface AnnouncementContainerProps {

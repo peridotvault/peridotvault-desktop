@@ -15,11 +15,21 @@
     "core:window:allow-toggle-maximize",
     "core:window:allow-close",
     "core:window:allow-start-dragging",
+    "http:default",
     {
-      "identifier": "http:default",
+      "identifier": "http:allow-fetch",
       "allow": [
         {
-          "url": "https://*"
+          "url": "https://*.alchemy.com"
+        },
+        {
+          "url": "https://*.solana.com"
+        },
+        {
+          "url": "https://api.peridotvault.com"
+        },
+        {
+          "url": "https://api-dev.peridotvault.com"
         }
       ]
     },

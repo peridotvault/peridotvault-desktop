@@ -5,13 +5,13 @@ const nowNs = (): bigint => BigInt(Date.now()) * 1_000_000n;
 const defaultGender: Gender = { other: null };
 
 export async function getUserData({ wallet }: { wallet: any }): Promise<UserInterface> {
-  const principal = wallet?.principalId ?? 'anonymous';
+  const address = wallet?.runtimeWallet?.evmAddress ?? 'anonymous';
   const createdAt = nowNs();
 
   return {
-    username: principal,
-    displayName: principal,
-    email: `${principal}@example.com`,
+    username: address,
+    displayName: address,
+    email: `${address}@example.com`,
     imageUrl: [],
     backgroundImageUrl: [],
     totalPlaytime: [],
@@ -65,7 +65,7 @@ export async function createDeveloperProfile({
   websiteUrl: string;
   bio: string;
 }): Promise<{ ok: true; websiteUrl: string; bio: string; owner: string }> {
-  const principal = wallet?.principalId ?? 'anonymous';
-  console.info('createDeveloperProfile stub invoked', { principal, websiteUrl, bio });
-  return { ok: true, websiteUrl, bio, owner: principal };
+  const address = wallet?.runtimeWallet?.evmAddress ?? 'anonymous';
+  console.info('createDeveloperProfile stub invoked', { address, websiteUrl, bio });
+  return { ok: true, websiteUrl, bio, owner: address };
 }

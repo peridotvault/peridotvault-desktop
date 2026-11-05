@@ -1,0 +1,968 @@
+{
+  "address": "DzDbFZXZsmFFv1mMFimLaBjAQi7Z5gUaQ61qcDuR6Kor",
+  "metadata": {
+    "name": "pgc1",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "can_access_game",
+      "discriminator": [
+        101,
+        154,
+        70,
+        158,
+        61,
+        66,
+        181,
+        109
+      ],
+      "accounts": [
+        {
+          "name": "game"
+        },
+        {
+          "name": "user"
+        },
+        {
+          "name": "license_account",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  105,
+                  99,
+                  101,
+                  110,
+                  115,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [],
+      "returns": "bool"
+    },
+    {
+      "name": "create_game",
+      "discriminator": [
+        124,
+        69,
+        75,
+        66,
+        184,
+        220,
+        72,
+        206
+      ],
+      "accounts": [
+        {
+          "name": "publisher",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "game_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "game_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "initial_minter_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  105,
+                  110,
+                  116,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game_account"
+              },
+              {
+                "kind": "arg",
+                "path": "initial_minter"
+              }
+            ]
+          }
+        },
+        {
+          "name": "registry_program"
+        },
+        {
+          "name": "store_program"
+        },
+        {
+          "name": "registry_config"
+        },
+        {
+          "name": "registry_treasury",
+          "writable": true
+        },
+        {
+          "name": "registry_game",
+          "writable": true
+        },
+        {
+          "name": "price_account",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "game_id",
+          "type": "string"
+        },
+        {
+          "name": "metadata_uri",
+          "type": "string"
+        },
+        {
+          "name": "initial_minter",
+          "type": "pubkey"
+        },
+        {
+          "name": "price",
+          "type": "u64"
+        },
+        {
+          "name": "currency",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "has_license",
+      "discriminator": [
+        109,
+        97,
+        76,
+        188,
+        79,
+        123,
+        144,
+        116
+      ],
+      "accounts": [
+        {
+          "name": "game"
+        },
+        {
+          "name": "user"
+        },
+        {
+          "name": "license_account",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  105,
+                  99,
+                  101,
+                  110,
+                  115,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [],
+      "returns": "bool"
+    },
+    {
+      "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "authority",
+          "type": "pubkey"
+        },
+        {
+          "name": "authorized_store",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "mint_license",
+      "discriminator": [
+        57,
+        204,
+        93,
+        84,
+        160,
+        241,
+        254,
+        52
+      ],
+      "accounts": [
+        {
+          "name": "minter",
+          "signer": true
+        },
+        {
+          "name": "minter_account"
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "game"
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "license_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  105,
+                  99,
+                  101,
+                  110,
+                  115,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "expires_at",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "revoke_license",
+      "discriminator": [
+        97,
+        10,
+        143,
+        67,
+        35,
+        212,
+        153,
+        8
+      ],
+      "accounts": [
+        {
+          "name": "minter",
+          "signer": true
+        },
+        {
+          "name": "minter_account",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  105,
+                  110,
+                  116,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "account",
+                "path": "minter"
+              }
+            ]
+          }
+        },
+        {
+          "name": "game"
+        },
+        {
+          "name": "user"
+        },
+        {
+          "name": "license_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  105,
+                  99,
+                  101,
+                  110,
+                  115,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "set_minter",
+      "discriminator": [
+        13,
+        170,
+        92,
+        172,
+        137,
+        194,
+        39,
+        2
+      ],
+      "accounts": [
+        {
+          "name": "publisher",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "game_account"
+          ]
+        },
+        {
+          "name": "game_account"
+        },
+        {
+          "name": "minter_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  105,
+                  110,
+                  116,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game_account"
+              },
+              {
+                "kind": "arg",
+                "path": "account"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "minter",
+          "type": "pubkey"
+        },
+        {
+          "name": "enabled",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "set_publisher",
+      "discriminator": [
+        110,
+        54,
+        4,
+        216,
+        151,
+        85,
+        46,
+        91
+      ],
+      "accounts": [
+        {
+          "name": "game_account",
+          "writable": true
+        },
+        {
+          "name": "publisher",
+          "signer": true,
+          "relations": [
+            "game_account"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "new_publisher",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "update_metadata_uri",
+      "discriminator": [
+        27,
+        40,
+        178,
+        7,
+        93,
+        135,
+        196,
+        102
+      ],
+      "accounts": [
+        {
+          "name": "publisher",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "game_account"
+          ]
+        },
+        {
+          "name": "game_account",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "new_uri",
+          "type": "string"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "LicenseAccount",
+      "discriminator": [
+        120,
+        20,
+        28,
+        217,
+        130,
+        168,
+        223,
+        118
+      ]
+    },
+    {
+      "name": "MinterAccount",
+      "discriminator": [
+        96,
+        76,
+        128,
+        125,
+        228,
+        218,
+        240,
+        23
+      ]
+    },
+    {
+      "name": "PgcConfig",
+      "discriminator": [
+        77,
+        197,
+        14,
+        175,
+        146,
+        114,
+        34,
+        46
+      ]
+    },
+    {
+      "name": "PgcGameAccount",
+      "discriminator": [
+        34,
+        116,
+        14,
+        33,
+        43,
+        198,
+        84,
+        223
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "GameCreated",
+      "discriminator": [
+        218,
+        25,
+        150,
+        94,
+        177,
+        112,
+        96,
+        2
+      ]
+    },
+    {
+      "name": "LicenseIssued",
+      "discriminator": [
+        193,
+        166,
+        92,
+        209,
+        232,
+        70,
+        195,
+        168
+      ]
+    },
+    {
+      "name": "LicenseRevoked",
+      "discriminator": [
+        185,
+        114,
+        47,
+        171,
+        61,
+        106,
+        25,
+        24
+      ]
+    },
+    {
+      "name": "MetadataUpdated",
+      "discriminator": [
+        132,
+        36,
+        215,
+        246,
+        166,
+        90,
+        189,
+        44
+      ]
+    },
+    {
+      "name": "MinterUpdated",
+      "discriminator": [
+        8,
+        124,
+        66,
+        45,
+        176,
+        53,
+        49,
+        153
+      ]
+    },
+    {
+      "name": "PublisherUpdated",
+      "discriminator": [
+        169,
+        238,
+        92,
+        110,
+        140,
+        167,
+        198,
+        170
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "GameAlreadyExists",
+      "msg": "Game already exists"
+    },
+    {
+      "code": 6001,
+      "name": "LicenseAlreadyExists",
+      "msg": "License already exists"
+    },
+    {
+      "code": 6002,
+      "name": "LicenseExpired",
+      "msg": "License has expired"
+    },
+    {
+      "code": 6003,
+      "name": "Unauthorized",
+      "msg": "Unauthorized access"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidGameId",
+      "msg": "Invalid game ID"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidMetadataUri",
+      "msg": "Invalid metadata URI"
+    },
+    {
+      "code": 6006,
+      "name": "RegistryCallFailed",
+      "msg": "Registry call failed"
+    },
+    {
+      "code": 6007,
+      "name": "StoreCallFailed",
+      "msg": "Store call failed"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidMinter",
+      "msg": "Invalid minter account"
+    }
+  ],
+  "types": [
+    {
+      "name": "GameCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game_id",
+            "type": "string"
+          },
+          {
+            "name": "publisher",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LicenseAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "issued_at",
+            "type": "i64"
+          },
+          {
+            "name": "expires_at",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LicenseIssued",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "expires_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LicenseRevoked",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "game",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MetadataUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "new_uri",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MinterAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "account",
+            "type": "pubkey"
+          },
+          {
+            "name": "is_authorized",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MinterUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "minter",
+            "type": "pubkey"
+          },
+          {
+            "name": "is_authorized",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PgcConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "authorized_store",
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PgcGameAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game_id",
+            "type": "string"
+          },
+          {
+            "name": "publisher",
+            "type": "pubkey"
+          },
+          {
+            "name": "metadata_uri",
+            "type": "string"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PublisherUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "old_publisher",
+            "type": "pubkey"
+          },
+          {
+            "name": "new_publisher",
+            "type": "pubkey"
+          }
+        ]
+      }
+    }
+  ]
+}

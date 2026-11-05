@@ -19,16 +19,16 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "baseUrl": ".",
     "paths": {
-      "@features/*": ["src/areas/main/features/*"],
-      "@components/*": ["src/components/*"],
-      "@shared/*": ["src/shared/*"],
-      "@interfaces/*": ["src/interfaces/*"],
-      "@services/*": ["src/services/*"],
-      "@pages/*": ["src/areas/main/pages/*"],
-      "@login/*": ["src/areas/login/*"],
-      "@main/*": ["src/areas/main/*"]
+      "@/*": ["./src/*"],
+      "@pages/*": ["./src/areas/main/pages/*"],
+      "@login/*": ["./src/areas/login/*"],
+      "@main/*": ["./src/areas/main/*"],
+      "@features/wallet": ["./src/features/wallet"],
+      "@features/wallet/*": ["./src/features/wallet/*"],
+      "@features/*": ["./src/areas/main/features/*"],
+      "@shared/*": ["./src/shared/*"],
+      "@core/*": ["./src/core/*"]
     },
     "typeRoots": ["./src/types", "./node_modules/@types"]
   },

@@ -1,4 +1,4 @@
-import type { PGCGame, Distribution } from "@shared/blockchain/icp/types/game";
+import type { PGCGame, Distribution } from "@shared/interfaces/game";
 
 export function resolveDistributionsFromGame(game: PGCGame): Distribution[] {
     if (Array.isArray(game.distribution) && game.distribution.length) {

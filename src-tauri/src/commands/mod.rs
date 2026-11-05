@@ -1,4 +1,4 @@
-use tauri::{AppHandle, Manager};
+use tauri::AppHandle;
 
 use crate::windows::{create_game_window, create_login_window, create_main_window};
 
@@ -14,11 +14,7 @@ pub async fn open_main_window(app_handle: AppHandle) {
         return;
     }
 
-    if let Some(login_win) = app_handle.get_webview_window("login") {
-        if let Err(e) = login_win.close() {
-            eprintln!("failed to close login window: {e}");
-        }
-    }
+
 }
 
 #[tauri::command]
@@ -30,11 +26,7 @@ pub async fn open_login_window(app_handle: AppHandle, stage: Option<String>) {
         return;
     }
 
-    if let Some(main_win) = app_handle.get_webview_window("main") {
-        if let Err(e) = main_win.close() {
-            eprintln!("failed to close main window: {e}");
-        }
-    }
+
 }
 
 #[tauri::command]

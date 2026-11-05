@@ -11,11 +11,10 @@ import {
   faVenusMars,
 } from '@fortawesome/free-solid-svg-icons';
 import countriesData from '@shared/assets/json/countries.json';
-import { AlertMessage } from '@features/wallet/components/AlertMessage';
 
 import { Gender, UserInterface, UpdateUserInterface } from '@shared/interfaces/user/UserInterface';
 import { getIsUsernameValid, getUserData, updateUser } from '@features/profile/services/user';
-import { optGet, ToOpt } from '@shared/interfaces/helpers/icp.helpers';
+import { optGet, ToOpt } from '@shared/interfaces/helpers/game.helpers';
 import { saveUserInfo } from '@shared/utils/IndexedDb';
 import { getCoverImage, getProfileImage } from '@shared/utils/Additional';
 import { InputFieldComponent } from '@shared/components/atoms/InputFieldComponent';
@@ -227,9 +226,17 @@ export default function EditUser() {
 
   return (
     <main className="w-full flex flex-col">
-      <div className="flex flex-col items-center">
-        {showSuccess && <AlertMessage msg="Account Updated Successfully" isSuccess />}
-        {showFailed && <AlertMessage msg="Account Update Failed" isSuccess={false} />}
+      <div className="flex flex-col items-center w-full">
+        {showSuccess && (
+          <div className="fixed top-20 right-8 z-50 bg-chart-2 text-white px-6 py-3 rounded-xl shadow-lg animate-in fade-in slide-in-from-right-4 duration-300">
+            Account Updated Successfully
+          </div>
+        )}
+        {showFailed && (
+          <div className="fixed top-20 right-8 z-50 bg-chart-5 text-white px-6 py-3 rounded-xl shadow-lg animate-in fade-in slide-in-from-right-4 duration-300">
+            Account Update Failed
+          </div>
+        )}
 
         <div className="mb-3 py-6 px-10 border-b border-muted-foreground flex justify-between items-center w-full">
           <p className="text-2xl font-semibold">Account Settings</p>

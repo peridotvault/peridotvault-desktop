@@ -1,9 +1,15 @@
 import { ButtonWithSound } from '@shared/components/ui/ButtonWithSound';
-import { LibraryEntry } from '@shared/interfaces/library';
 import { ImageLoading } from '@shared/constants/images';
 
+interface LibrarySidebarItemEntry {
+  gameId: string;
+  gameName: string;
+  coverVerticalImage?: string;
+  bannerImage?: string;
+}
+
 interface LibrarySidebarItemProps {
-  entry: LibraryEntry;
+  entry: LibrarySidebarItemEntry;
   isActive: boolean;
   onClick: () => void;
 }

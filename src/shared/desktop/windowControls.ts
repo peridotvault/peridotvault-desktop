@@ -4,33 +4,39 @@ type LoginWindowStage = 'updater' | 'login';
 
 export const isDesktopRuntime = () => isTauriRuntime();
 
-// Buka main window + tutup login window (Rust yang urus)
+const closeCurrentWindow = async () => {
+  const currentWindow = await getCurrentWebviewWindowSafe();
+  try {
+    await currentWindow?.close();
+  } catch (error) {
+    console.warn('[windowControls] Failed to close current window', error);
+  }
+};
+
 export const showMainWindow = async () => {
   if (!isDesktopRuntime()) return;
   try {
+    const currentWindow = await getCurrentWebviewWindowSafe();
+    if (currentWindow?.label === 'main') return;
     const { invoke } = await import('@tauri-apps/api/core');
     await invoke('open_main_window');
+    await closeCurrentWindow();
   } catch (error) {
     console.warn('[windowControls] Failed to open main window', error);
   }
 };
 
-// Buka login window + tutup main window (Rust yang urus)
 export const showLoginWindow = async (targetStage?: LoginWindowStage) => {
   if (!isDesktopRuntime()) return;
   try {
+    const currentWindow = await getCurrentWebviewWindowSafe();
+    if (currentWindow?.label === 'login') return;
     const { invoke } = await import('@tauri-apps/api/core');
     await invoke('open_login_window', { stage: targetStage });
+    await closeCurrentWindow();
   } catch (error) {
     console.warn('[windowControls] Failed to open login window', error);
   }
-};
-
-// Optional: sembunyikan window saat ini (kalau butuh)
-export const hideCurrentWindow = async () => {
-  if (!isDesktopRuntime()) return;
-  const currentWindow = await getCurrentWebviewWindowSafe();
-  await currentWindow?.hide();
 };
 
 export const redirectToLogin = (stage: LoginWindowStage = 'login') => {

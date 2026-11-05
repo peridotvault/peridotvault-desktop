@@ -1,11 +1,17 @@
 // src/features/library/components/LibraryGameCard.tsx
 import React from 'react';
-import type { LibraryEntry } from '@shared/interfaces/library';
 import { ImageLoading } from '@shared/constants/images';
 import { ButtonWithSound } from '@shared/components/ui/ButtonWithSound';
 
+interface LibraryGameCardEntry {
+  gameId: string;
+  gameName: string;
+  coverVerticalImage?: string;
+  bannerImage?: string;
+}
+
 interface LibraryGameCardProps {
-  entry: LibraryEntry;
+  entry: LibraryGameCardEntry;
   onClick: () => void;
 }
 

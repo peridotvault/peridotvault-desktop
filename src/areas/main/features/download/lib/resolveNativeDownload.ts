@@ -1,4 +1,4 @@
-import type { Distribution, Manifest, StorageRef } from '@shared/blockchain/icp/types/game';
+import type { Distribution, Manifest, StorageRef } from '@shared/interfaces/game';
 import type { OSKey } from '@shared/interfaces/CoreInterface';
 import { normalizeOSKey } from '@shared/utils/os';
 import type { NativeDownloadInfo } from '../interfaces/download';

@@ -46,7 +46,8 @@ const GAME_WINDOW_CONFIG: WindowConfig = WindowConfig {
 };
 
 pub fn build_login_window(app: &AppHandle) -> tauri::Result<()> {
-    if app.get_webview_window("login").is_some() {
+    if let Some(win) = app.get_webview_window("login") {
+        let _ = win.set_focus();
         return Ok(());
     }
 
@@ -65,7 +66,8 @@ pub fn build_login_window(app: &AppHandle) -> tauri::Result<()> {
 }
 
 pub fn build_main_window(app: &AppHandle) -> tauri::Result<()> {
-    if app.get_webview_window("main").is_some() {
+    if let Some(win) = app.get_webview_window("main") {
+        let _ = win.set_focus();
         return Ok(());
     }
 

@@ -1,19 +1,24 @@
-// Placeholder for future library services interacting with the registry canister.
-// import { ICPPrivateAgent } from '@shared/blockchain/icp/sdk/actors';
-// import { createActorRegistry } from '@shared/blockchain/icp/sdk/agents';
-// import { OffChainGameMetadata } from '../types/game.type';
+import { libraryService } from '@features/library/services/localDb';
+import type { LibraryEntry, CreateLibraryEntryInput } from '@shared/interfaces/library';
 
+export async function getLocalGames(): Promise<LibraryEntry[]> {
+  try {
+    const entries = await libraryService.getAll();
+    console.log(`[getLocalGames] Loaded ${entries.length} games from local DB`);
+    return entries;
+  } catch (error) {
+    console.error('[getLocalGames] Failed to load games:', error);
+    return [];
+  }
+}
 
-// export async function getMyGames({ wallet }: { wallet: any }): Promise<OffChainGameMetadata[]> {
-//     const privateKey = await walletService.decryptWalletData(wallet.encryptedPrivateKey);
-//     try {
-//         // Initialize agent with identity
-//         const agent = ICPPrivateAgent({ privateKey });
-//         const actor = createActorRegistry(REGISTRY_CANISTER, { agent });
-
-//         const result = (await actor.getMyGames());
-//         return result;
-//     } catch (error) {
-//         throw new Error('Error Service Get My Games : ' + error);
-//     }
-// }
+export async function addLocalGame(game: CreateLibraryEntryInput): Promise<LibraryEntry | null> {
+  try {
+    const entry = await libraryService.create(game);
+    console.log(`[addLocalGame] Added game to library: ${game.gameId}`);
+    return entry;
+  } catch (error) {
+    console.error('[addLocalGame] Failed to add game:', error);
+    return null;
+  }
+}

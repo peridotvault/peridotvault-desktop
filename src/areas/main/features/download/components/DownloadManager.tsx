@@ -7,12 +7,16 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import type { DownloadTask, EnqueueDownloadInput, NativeDownloadInfo } from '../interfaces/download';
+import type {
+  DownloadTask,
+  EnqueueDownloadInput,
+  NativeDownloadInfo,
+} from '../interfaces/download';
 import { downloadFile } from '../lib/downloadFile';
 import { selectInstallDirectory } from '../lib/selectInstallDir';
 import { upsertInstalledEntry } from '@shared/utils/installedStorage';
-import { libraryService } from '@features/library/services/localDb';
 import type { GameId } from '@shared/interfaces/game';
+import { libraryService } from '@main/features/library/services/localDb';
 
 type RequestInstallOptions = Omit<EnqueueDownloadInput, 'installDir'>;
 

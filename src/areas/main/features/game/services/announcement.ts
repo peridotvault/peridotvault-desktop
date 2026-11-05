@@ -1,4 +1,4 @@
-import type { GameAnnouncementType } from '@shared/blockchain/icp/types/game';
+import type { GameAnnouncementType } from '@shared/interfaces/game';
 
 export interface CreateAnnouncementPayload {
   headline: string;
