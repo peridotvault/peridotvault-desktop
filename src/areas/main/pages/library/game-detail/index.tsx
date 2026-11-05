@@ -20,6 +20,8 @@ import { detectOSKey } from '@shared/utils/os';
 import { useInstalled } from '@features/download/hooks/useInstalled';
 import { resolveNativeDownload } from '@features/download/lib/resolveNativeDownload';
 import { GameActionButton } from '@features/download/components/GameActionButton';
+import { TrackEditionSelector } from '@shared/drm/TrackEditionSelector';
+import type { Track } from '@shared/drm/tracks';
 import type { PlatformType } from '@features/download/interfaces/download';
 import { STORAGE_URL } from '@shared/constants/storage';
 
@@ -31,6 +33,9 @@ export default function LibraryGameDetail() {
   const [libraryEntry, setLibraryEntry] = useState<LibraryEntry | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // DRM edition (ANT-942 FR7): OFF = tanpa wallet/gas, ON = gas + chain.
+  const [track, setTrack] = useState<Track>('offchain');
 
   // normalize appId untuk penyimpanan lokal
   const appIdKey = useMemo(() => {
@@ -395,6 +400,15 @@ export default function LibraryGameDetail() {
           <div className="w-full lg:w-80 flex flex-col gap-4">
             {/* Play Action Card */}
             <div className="bg-card rounded-2xl p-5 shadow-flat-sm sticky top-4">
+              {/* DRM edition + upfront cost (ANT-942 FR7) */}
+              <TrackEditionSelector
+                editions={[
+                  { track: 'offchain', label: 'OFF' },
+                  { track: 'onchain', label: 'ON', chain: 'eip155:84532' },
+                ]}
+                value={track}
+                onChange={setTrack}
+              />
               <GameActionButton
                 gameId={appIdKey ?? gameId ?? 'unknown'}
                 title={gameName}
@@ -403,6 +417,7 @@ export default function LibraryGameDetail() {
                 webUrl={webUrl}
                 onPlay={onLaunch}
                 className="w-full justify-center text-lg py-4"
+                track={track}
               />
 
               {webUrl && (

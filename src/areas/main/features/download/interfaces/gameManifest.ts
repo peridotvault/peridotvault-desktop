@@ -4,6 +4,10 @@ export type GameManifest = {
     version: string;
     platform: string;
     sizeBytes: number;
-    downloadUrl: string;
+    /** Integrity hash from the signed download-url response (FR2). */
+    manifestHashSha256?: string;
     entryExe: string;
+    // NOTE (ANT-942): the manifest NEVER carries a raw `download_url`.
+    // Downloads go only through POST /v1/games/{id}/download-url
+    // (TTL-bound, entitlement-gated). Do not re-add a URL field here.
 };
