@@ -19,6 +19,8 @@ import { detectOSKey } from '@shared/utils/os';
 import { useInstalled } from '@features/download/hooks/useInstalled';
 import { resolveNativeDownload } from '@features/download/lib/resolveNativeDownload';
 import { GameActionButton } from '@features/download/components/GameActionButton';
+import { TrackEditionSelector } from '@shared/drm/TrackEditionSelector';
+import type { Track } from '@shared/drm/tracks';
 import type { PlatformType } from '@features/download/interfaces/download';
 
 import type { GameId } from '@shared/interfaces/game';
@@ -30,6 +32,9 @@ export default function LibraryGameDetail() {
 
   const [theGame, setTheGame] = useState<PGCGame | null>(null);
   const [libraryEntry, setLibraryEntry] = useState<LibraryEntry | null>(null);
+
+  // DRM edition (ANT-942 FR7): OFF = tanpa wallet/gas, ON = gas + chain.
+  const [track, setTrack] = useState<Track>('offchain');
 
   // normalize appId untuk penyimpanan lokal
   const appIdKey = useMemo(() => {
@@ -255,6 +260,16 @@ export default function LibraryGameDetail() {
               </div>
             </div>
 
+            {/* DRM edition + upfront cost (ANT-942 FR7) */}
+            <TrackEditionSelector
+              editions={[
+                { track: 'offchain', label: 'OFF' },
+                { track: 'onchain', label: 'ON', chain: 'eip155:84532' },
+              ]}
+              value={track}
+              onChange={setTrack}
+            />
+
             {/* CTAs */}
             <div className="flex flex-col gap-4">
               <GameActionButton
@@ -265,6 +280,7 @@ export default function LibraryGameDetail() {
                 webUrl={webUrl}
                 onPlay={onLaunch}
                 className="w-full justify-center"
+                track={track}
               />
 
               <ButtonWithSound className="border border-foreground/20 px-6 py-2 rounded-lg flex gap-2 items-center w-full justify-center">
